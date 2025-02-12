@@ -9,10 +9,11 @@ const MapaPolski = () => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchCities = (voivodeshipCode) => {
+  const fetchCities = (voivodeshipId) => {
     setLoading(true);
     setTimeout(() => { 
-      const cities = citiesData[voivodeshipCode] || [];
+      const cities = citiesData[voivodeshipId] || [];
+      console.log("Znalezione miasta:", cities);
       setCities(cities);
       setLoading(false);
     }, 500);
@@ -48,14 +49,15 @@ const MapaPolski = () => {
                     setHoveredVoivodeship(null);
                   }}
                   onClick={() => {
-                    const voivodeshipCode = geo.properties.kod;
-                    fetchCities(voivodeshipCode);
+                    const voivodeshipId = geo.id;
+                    console.log("Kliknięto województwo o id:", voivodeshipId);
+                    fetchCities(voivodeshipId);
                   }}
                   style={{
                     default: {
                       fill: "#EEE",
                       stroke: "#000",
-                      strokeWidth: "0.5px",
+                      strokeWidth: "1px",
                       outline: "none",
                       opacity: isHovered ? 1 : 0.5,
                       transition: "all 0.3s ease",
@@ -63,9 +65,9 @@ const MapaPolski = () => {
                     hover: {
                       fill: "#EEE",
                       stroke: "#800080",
-                      strokeWidth: "2px",
+                      strokeWidth: "4px",
                       outline: "none",
-                      filter: "drop-shadow(0 0 8px rgba(128, 0, 128, 0.8))",
+                      filter: "drop-shadow(0 0 8px rgba(142, 7, 195, 0.8))",
                       transform: "scale(1.05) translateY(-5px)",
                       opacity: 1,
                       transition: "all 0.3s ease",
@@ -73,7 +75,7 @@ const MapaPolski = () => {
                     pressed: {
                       fill: "#EEE",
                       stroke: "#000",
-                      strokeWidth: "2px",
+                      strokeWidth: "4px",
                       outline: "none",
                     },
                   }}
