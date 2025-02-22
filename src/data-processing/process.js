@@ -1,43 +1,46 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 
+const wojewodztwaMap = {
+  "02": 7, //  Dolnośląskie
+  "04": 5, //  Kujawsko-pomorskie
+  "06": 14, // Lubelskie
+  "08": 15, // Lubuskie
+  "10": 12, // Łódzkie
+  "12": 9, // Małopolskie
+  "14": 13, // Mazowieckie
+  "16": 6, // Opolskie
+  "18": 8, // Podkarpackie
+  "20": 6, // Podlaskie
+  "22": 10, // Pomorskie
+  "24": 0, // Śląskie
+  "26": 4, //  Świętokrzyskie
+  "28": 11, // Warmińsko-mazurskie
+  "30": 2, //  Wielkopolskie
+  "32": 3 //   Zachodniopomorskie
+};
+
 const wojewodztwa = [];
+const miejscowosci = [];
 const powiaty = [];
 const gminy = [];
-const miejscowosci = [];
 
 const logData = (data, description) => {
   console.log(description, JSON.stringify(data, null, 2));
 };
 
-fs.createReadStream('TERC.csv')
-  .pipe(csv({ separator: ';', headers: ['WOJ', 'POW', 'GMI', 'RODZ_GMI', 'NAZWA', 'TYP', 'STAN_NA'] }))
-  .on('data', (row) => {
-    if (row.NAZWA && row.WOJ) {
-      if (row.POW === '00' && row.GMI === '00') {
-        wojewodztwa.push({ kod: row.WOJ, nazwa: row.NAZWA });
-      } else if (row.GMI === '00') {
-        powiaty.push({ kod: row.WOJ + row.POW, nazwa: row.NAZWA });
-      } else {
-        gminy.push({ kod: row.WOJ + row.POW + row.GMI, nazwa: row.NAZWA });
-      }
-    }
-  })
-  .on('end', () => {
-    logData(wojewodztwa, 'Województwa:');
-    logData(powiaty, 'Powiaty:');
-    logData(gminy, 'Gminy:');
-  });
-
 fs.createReadStream('SIMC.csv')
   .pipe(csv({ separator: ';', headers: ['WOJ', 'POW', 'GMI', 'RODZ_GMI', 'RM', 'MZ', 'NAZWA', 'SYM', 'SYMPOD', 'STAN_NA'] }))
   .on('data', (row) => {
     if (row.NAZWA && row.WOJ) {
+      const wojewodztwoId = wojewodztwaMap[row.WOJ.padStart(2, '0')];
+      console.log(`WOJ: ${row.WOJ}, id: ${wojewodztwoId}`);
       miejscowosci.push({
         wojewodztwo: row.WOJ,
         powiat: row.POW,
         gmina: row.GMI,
-        nazwa: row.NAZWA
+        nazwa: row.NAZWA,
+        MZ: row.MZ === '1' ? 1 : 0
       });
     }
   })
@@ -45,16 +48,16 @@ fs.createReadStream('SIMC.csv')
     logData(miejscowosci, 'Miejscowości:');
 
     const miastaWedlugWojewodztw = miejscowosci.reduce((acc, miejscowosc) => {
-      if (!acc[miejscowosc.wojewodztwo]) {
-        acc[miejscowosc.wojewodztwo] = new Set();
+      const wojewodztwoId = miejscowosc.id;
+      if (!acc[wojewodztwoId]) {
+        acc[wojewodztwoId] = [];
       }
-      acc[miejscowosc.wojewodztwo].add(miejscowosc.nazwa);
+      acc[wojewodztwoId].push({
+        nazwa: miejscowosc.nazwa,
+        MZ: miejscowosc.MZ
+      });
       return acc;
     }, {});
-
-    for (const wojewodztwo in miastaWedlugWojewodztw) {
-      miastaWedlugWojewodztw[wojewodztwo] = Array.from(miastaWedlugWojewodztw[wojewodztwo]);
-    }
 
     logData(miastaWedlugWojewodztw, 'Dane do zapisania:');
 
