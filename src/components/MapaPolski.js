@@ -1,32 +1,132 @@
 import React, { useState } from 'react';
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import citiesData from './cities.json';
+import './MapaPolski.css';
 
 const geoUrl = "https://raw.githubusercontent.com/ppatrzyk/polska-geojson/master/wojewodztwa/wojewodztwa-medium.geojson";
+
+const voivodeshipNames = {
+  0: "Śląskie",
+  1: "Opolskie",
+  2: "Wielkopolskie",
+  3: "Zachodnio-pomorskie",
+  4: "Świętokrzyskie",
+  5: "Kujawsko-pomorskie",
+  6: "Podlaskie",
+  7: "Dolnośląskie",
+  8: "Podkarpackie",
+  9: "Małopolskie",
+  10: "Pomorskie",
+  11: "Warmińsko-mazurskie",
+  12: "Łódzkie",
+  13: "Mazowieckie",
+  14: "Lubelskie",
+  15: "Lubuskie",
+};
+
+const voivodeshipSettings = {
+  0: { scale: 1.05, center: [18.5, 50.2] }, // Śląskie
+  1: { scale: 1.3, center: [17.9, 50.7] }, // Opolskie
+  2: { scale: 0.7, center: [16.9, 52.4] }, // Wielkopolskie
+  3: { scale: 0.7, center: [15.2, 53.4] }, // Zachodnio-pomorskie
+  4: { scale: 1.6, center: [20.6, 50.8] }, // Świętokrzyskie
+  5: { scale: 1.2, center: [18.3, 53.1] }, // Kujawsko-pomorskie
+  6: { scale: 0.7, center: [22.7, 53.5] }, // Podlaskie
+  7: { scale: 1.0, center: [16.3, 50.9] }, // Dolnośląskie
+  8: { scale: 1.0, center: [22.0, 50.0] }, // Podkarpackie
+  9: { scale: 1.4, center: [19.9, 49.8] }, // Małopolskie
+  10: { scale: 1.2, center: [17.8, 54.2] }, // Pomorskie
+  11: { scale: 1.1, center: [20.6, 53.7] }, // Warmińsko-mazurskie
+  12: { scale: 1.2, center: [19.4, 51.6] }, // Łódzkie
+  13: { scale: 0.7, center: [21.0, 52.3] }, // Mazowieckie
+  14: { scale: 0.9, center: [22.5, 51.2] }, // Lubelskie
+  15: { scale: 1.0, center: [15.2, 52.3] }, // Lubuskie
+};
+
+const cityCoordinates = {
+  0: [19.0, 50.25], // Katowice (Śląskie)
+  1: [17.95, 50.67], // Opole (Opolskie)
+  2: [16.93, 52.41], // Poznań (Wielkopolskie)
+  3: [14.55, 53.43], // Szczecin (Zachodnio-pomorskie)
+  4: [20.63, 50.87], // Kielce (Świętokrzyskie)
+  5: [18.0, 53.12], // Bydgoszcz/Toruń (Kujawsko-pomorskie)
+  6: [23.15, 53.13], // Białystok (Podlaskie)
+  7: [17.03, 51.11], // Wrocław (Dolnośląskie)
+  8: [22.0, 50.04], // Rzeszów (Podkarpackie)
+  9: [19.94, 50.06], // Kraków (Małopolskie)
+  10: [18.64, 54.35], // Gdańsk (Pomorskie)
+  11: [20.48, 53.78], // Olsztyn (Warmińsko-mazurskie)
+  12: [19.46, 51.76], // Łódź (Łódzkie)
+  13: [21.0, 52.23], // Warszawa (Mazowieckie)
+  14: [22.57, 51.25], // Lublin (Lubelskie)
+  15: [15.24, 52.73], // Gorzów Wielkopolski/Zielona Góra (Lubuskie)
+};
+
+const cityNames = {
+  0: "Katowice",
+  1: "Opole",
+  2: "Poznań",
+  3: "Szczecin",
+  4: "Kielce",
+  5: "Bydgoszcz/Toruń",
+  6: "Białystok",
+  7: "Wrocław",
+  8: "Rzeszów",
+  9: "Kraków",
+  10: "Gdańsk",
+  11: "Olsztyn",
+  12: "Łódź",
+  13: "Warszawa",
+  14: "Lublin",
+  15: "Gorzów Wielkopolski/Zielona Góra",
+};
 
 const MapaPolski = () => {
   const [hoveredVoivodeship, setHoveredVoivodeship] = useState(null);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [zoomedVoivodeship, setZoomedVoivodeship] = useState(null);
+  const [voivodeshipCenter, setVoivodeshipCenter] = useState([19, 52]);
+  const [voivodeshipScale, setVoivodeshipScale] = useState(1);
+  const [isInfoBarVisible, setIsInfoBarVisible] = useState(true);
+  const [hoveredCity, setHoveredCity] = useState(null);
 
   const fetchCities = (voivodeshipId) => {
     setLoading(true);
     setTimeout(() => {
       const cities = citiesData[voivodeshipId] || [];
-      console.log("Znalezione miasta:", cities);
       setCities(cities);
       setLoading(false);
     }, 500);
   };
 
   const handleZoom = (voivodeshipId) => {
-    setZoomedVoivodeship(voivodeshipId); // Powiększ wybrane województwo
+    const settings = voivodeshipSettings[voivodeshipId];
+    if (settings) {
+      setVoivodeshipCenter(settings.center);
+      setVoivodeshipScale(settings.scale);
+      setZoomedVoivodeship(voivodeshipId);
+    }
   };
 
   const handleBackToMap = () => {
     setCities([]);
-    setZoomedVoivodeship(null); // Powrót do widoku całej mapy
+    setZoomedVoivodeship(null);
+    setVoivodeshipCenter([19, 52]);
+    setVoivodeshipScale(1);
+  };
+
+  const toggleInfoBar = () => {
+    setIsInfoBarVisible(!isInfoBarVisible);
+  };
+
+  const handleMouseMove = (e) => {
+    const button = e.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    button.style.setProperty('--x', `${x}px`);
+    button.style.setProperty('--y', `${y}px`);
   };
 
   return (
@@ -36,53 +136,75 @@ const MapaPolski = () => {
       display: "flex", 
       justifyContent: "center", 
       alignItems: "center", 
-      flexDirection: "column" 
+      flexDirection: "column",
+      fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+      position: "relative",
     }}>
-      <div style={{
-        width: "100%",
-        maxWidth: "800px",
-        margin: "20px 0"
-      }}></div>
-      <div style={{
-        width: "80%",
-        height: "auto",
-        position: "relative",
-        overflow: "hidden",
+      {/* Tytuł strony */}
+      <h1 style={{ 
+        marginBottom: "20px", 
+        fontSize: "2em", 
+        color: "#333",
+        animation: "fadeIn 1s ease-in-out",
       }}>
+        Mapa Polski z Województwami
+      </h1>
+
+      {/* Nazwa województwa po najechaniu */}
+      {hoveredVoivodeship !== null && (
+        <h2 style={{ 
+          marginBottom: "10px", 
+          fontSize: "1.5em", 
+          color: "#555",
+          animation: "slideIn 0.5s ease-in-out",
+        }}>
+          {voivodeshipNames[hoveredVoivodeship]}
+        </h2>
+      )}
+
+      {/* Nazwa województwa po kliknięciu */}
+      {zoomedVoivodeship !== null && (
+        <h2 style={{ 
+          marginBottom: "10px", 
+          fontSize: "1.5em", 
+          color: "#555",
+          animation: "slideIn 0.5s ease-in-out",
+        }}>
+          {voivodeshipNames[zoomedVoivodeship]}
+        </h2>
+      )}
+
+      <div style={{ width: "100%", maxWidth: "800px", margin: "20px 0" }}></div>
+      <div style={{ width: "80%", height: "auto", position: "relative", overflow: "hidden" }}>
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
-            scale: 3000,
-            center: [19, 52],
+            scale: 2500,
+            center: [19, 51.5],
           }}
           style={{
             width: "100%",
             height: "auto",
             transition: "opacity 0.5s ease, transform 0.5s ease",
-            opacity: zoomedVoivodeship ? 0 : 1, // Ukryj mapę podczas powiększania
+            opacity: zoomedVoivodeship !== null ? 0 : 1,
           }}
         >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map((geo) => {
                 const isHovered = hoveredVoivodeship === geo.rsmKey;
-                const isZoomed = zoomedVoivodeship === geo.id; // Sprawdź, czy województwo jest powiększone
+                const isZoomed = zoomedVoivodeship === geo.id;
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    onMouseEnter={() => {
-                      setHoveredVoivodeship(geo.rsmKey);
-                    }}
-                    onMouseLeave={() => {
-                      setHoveredVoivodeship(null);
-                    }}
+                    onMouseEnter={() => setHoveredVoivodeship(geo.id)}
+                    onMouseLeave={() => setHoveredVoivodeship(null)}
                     onClick={() => {
                       const voivodeshipId = geo.id;
-                      console.log("Kliknięto województwo o id:", voivodeshipId);
                       fetchCities(voivodeshipId);
-                      handleZoom(voivodeshipId); // Powiększ województwo po kliknięciu
+                      handleZoom(voivodeshipId);
                     }}
                     style={{
                       default: {
@@ -91,7 +213,7 @@ const MapaPolski = () => {
                         strokeWidth: "1px",
                         outline: "none",
                         opacity: isZoomed ? 1 : isHovered ? 1 : 0.7,
-                        transform: isZoomed ? "scale(3)" : "scale(1)", // Powiększanie po kliknięciu
+                        transform: isZoomed ? `scale(${voivodeshipScale})` : "scale(1)",
                         transition: "all 0.5s ease",
                       },
                       hover: {
@@ -118,7 +240,7 @@ const MapaPolski = () => {
           </Geographies>
         </ComposableMap>
 
-        {zoomedVoivodeship && (
+        {zoomedVoivodeship !== null && (
           <div style={{
             position: "absolute",
             top: 0,
@@ -130,12 +252,13 @@ const MapaPolski = () => {
             alignItems: "center",
             backgroundColor: "rgba(255, 255, 255, 0.9)",
             transition: "opacity 0.5s ease",
+            animation: "zoomIn 0.5s ease-in-out",
           }}>
             <ComposableMap
               projection="geoMercator"
               projectionConfig={{
-                scale: 6000,
-                center: [19, 52],
+                scale: 5500 * voivodeshipScale,
+                center: voivodeshipCenter,
               }}
               style={{
                 width: "100%",
@@ -146,7 +269,7 @@ const MapaPolski = () => {
               <Geographies geography={geoUrl}>
                 {({ geographies }) =>
                   geographies
-                    .filter((geo) => geo.id === zoomedVoivodeship) // Tylko powiększone województwo
+                    .filter((geo) => geo.id === zoomedVoivodeship)
                     .map((geo) => (
                       <Geography
                         key={geo.rsmKey}
@@ -165,26 +288,86 @@ const MapaPolski = () => {
                     ))
                 }
               </Geographies>
+
+              {/* Marker miasta wojewódzkiego */}
+              <Marker coordinates={cityCoordinates[zoomedVoivodeship]}>
+                <g
+                  onMouseEnter={() => setHoveredCity(zoomedVoivodeship)}
+                  onMouseLeave={() => setHoveredCity(null)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {/* Kropka */}
+                  <circle
+                    r={4}
+                    fill="#800080"
+                    stroke="#FFF"
+                    strokeWidth={1}
+                    style={{
+                      transition: "all 0.3s ease",
+                    }}
+                  />
+
+                  {/* Linia prowadząca do prostokąta */}
+                  {hoveredCity === zoomedVoivodeship && (
+                    <line
+                      x1={0}
+                      y1={0}
+                      x2={50}
+                      y2={-50}
+                      stroke="#800080"
+                      strokeWidth={2}
+                      style={{
+                        transition: "all 0.5s ease",
+                      }}
+                    />
+                  )}
+
+                  {/* Prostokąt z nazwą miasta */}
+                  {hoveredCity === zoomedVoivodeship && (
+                    <g className="city-label">
+                      <rect
+                        x={50}
+                        y={-70}
+                        width={cityNames[zoomedVoivodeship].length * 8}
+                        height={30}
+                        fill="#800080"
+                        rx={5}
+                        ry={5}
+                        style={{
+                          transition: "all 0.5s ease",
+                        }}
+                      />
+                      <text
+                        x={50 + (cityNames[zoomedVoivodeship].length * 8) / 2}
+                        y={-55}
+                        textAnchor="middle"
+                        style={{
+                          fill: "#FFF",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        {cityNames[zoomedVoivodeship]}
+                      </text>
+                    </g>
+                  )}
+                </g>
+              </Marker>
             </ComposableMap>
 
+            {/* Przycisk powrotu do mapy */}
             <button
               onClick={handleBackToMap}
+              onMouseMove={handleMouseMove}
+              className="button"
               style={{
                 position: "absolute",
                 top: "20px",
                 right: "20px",
-                padding: "10px 20px",
-                backgroundColor: "#800080",
-                color: "#FFF",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                fontSize: "1em",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-                transition: "background-color 0.3s ease",
+                border: "2px solid rgb(255, 255, 255)",
               }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = "#4B0082"}
-              onMouseLeave={(e) => e.target.style.backgroundColor = "#800080"}
             >
               Powrót do mapy
             </button>
@@ -206,7 +389,8 @@ const MapaPolski = () => {
             backgroundColor: "#FFF", 
             borderRadius: "10px", 
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", 
-            textAlign: "center" 
+            textAlign: "center",
+            animation: "slideIn 0.5s ease-in-out",
           }}>
             <h2>Miasta w wybranym województwie:</h2>
             <div style={{ 
@@ -220,8 +404,13 @@ const MapaPolski = () => {
                   padding: "10px", 
                   backgroundColor: "#f0f0f0", 
                   borderRadius: "5px", 
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)" 
-                }}>
+                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                  transition: "all 0.3s ease",
+                  animation: "fadeIn 0.5s ease-in-out",
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#ddd"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#f0f0f0"}
+                >
                   {city}
                 </div>
               ))}
@@ -229,6 +418,72 @@ const MapaPolski = () => {
           </div>
         )}
       </div>
+
+      {/* Pasek informacyjny */}
+      {isInfoBarVisible && (
+        <div style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          color: "#FFF",
+          padding: "10px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          zIndex: 1000,
+          animation: "slideUp 0.5s ease-in-out",
+        }}>
+          <div style={{ 
+            flex: 1,
+            textAlign: "left",
+            marginLeft: "20px",
+          }}>
+            Specjalne podziękowania dla Piotra Patrzyka za stworzenie i udostępnienie GeoJson
+          </div>
+
+          <div style={{ 
+            flex: 1,
+            textAlign: "center",
+          }}>
+            Strona stworzona przez Kosme Brzeżawskiego
+          </div>
+
+          <div style={{ 
+            flex: 1,
+            textAlign: "right",
+            marginRight: "20px",
+          }}>
+            <button
+              onClick={toggleInfoBar}
+              onMouseMove={handleMouseMove}
+              className="button"
+              style={{
+                border: "2px solid #800080",
+              }}
+            >
+              Zamknij
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Przycisk otwierający pasek informacyjny */}
+      {!isInfoBarVisible && (
+        <button
+          onClick={toggleInfoBar}
+          onMouseMove={handleMouseMove}
+          className="button"
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+          }}
+        >
+          Otwórz pasek
+        </button>
+      )}
     </div>
   );
 };
