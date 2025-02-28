@@ -109,17 +109,53 @@
   opacity: 0;
 }
 
-@keyframes slideUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+
+/* Animacja kropki */
+.circle-animation {
+  transition: all 0.5s ease;
+}
+
+.circle-step-1 {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: openCircle 0.5s forwards;
+}
+
+@keyframes openCircle {
+  to {
+    stroke-dashoffset: 75; /* Otwórz koło o 1/4 obwodu */
   }
 }
 
-.city-label {
-  animation: slideUp 1.4s ease-out forwards;
+.rectangle-animation {
+  opacity: 0; /* Początkowo niewidoczny */
+  transform: scale(0);
+  animation-fill-mode: forwards; /* Zachowaj końcowy stan animacji */
+}
+
+.rectangle-step-2 {
+  opacity: 1;
+  transform: scale(1);
+  animation: drawRectangle 0.5s forwards; /* Dodaj forwards */
+}
+
+@keyframes drawRectangle {
+  from {
+    opacity: 0;
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  to {
+    opacity: 1;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+/* Animacja tekstu */
+.text-animation {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.text-step-4 {
+  opacity: 0;
 }

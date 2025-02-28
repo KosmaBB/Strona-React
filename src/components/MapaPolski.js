@@ -89,7 +89,8 @@ const MapaPolski = () => {
   const [voivodeshipCenter, setVoivodeshipCenter] = useState([19, 52]);
   const [voivodeshipScale, setVoivodeshipScale] = useState(1);
   const [isInfoBarVisible, setIsInfoBarVisible] = useState(true);
-  const [hoveredCity, setHoveredCity] = useState(null);
+  const [hoveredCity, setHoveredCity] = useState(null); // Stan do śledzenia najechania na marker
+  const [animationStep, setAnimationStep] = useState(0); // Stan do kontrolowania animacji
 
   const fetchCities = (voivodeshipId) => {
     setLoading(true);
@@ -114,6 +115,7 @@ const MapaPolski = () => {
     setZoomedVoivodeship(null);
     setVoivodeshipCenter([19, 52]);
     setVoivodeshipScale(1);
+    setAnimationStep(0); // Resetuj animację
   };
 
   const toggleInfoBar = () => {
@@ -127,6 +129,27 @@ const MapaPolski = () => {
     const y = e.clientY - rect.top;
     button.style.setProperty('--x', `${x}px`);
     button.style.setProperty('--y', `${y}px`);
+  };
+
+  const startAnimation = () => {
+    setAnimationStep(1); // Rozpocznij animację
+    setTimeout(() => setAnimationStep(2), 500); // Przejdź do kolejnego kroku
+    setTimeout(() => setAnimationStep(3), 1000); // Przejdź do kolejnego kroku
+    setTimeout(() => setAnimationStep(4), 1500); // Zakończ animację
+  };
+
+  const handleMouseEnter = () => {
+    setHoveredCity(zoomedVoivodeship); // Ustaw stan hoveredCity na aktualne województwo
+    startAnimation(); // Rozpocznij animację
+  };
+
+  const handleMouseLeave = () => {
+    setTimeout(() => {
+      if (hoveredCity === null) {
+        setHoveredCity(null);
+        setAnimationStep(0);
+      }
+    }, 1500);
   };
 
   return (
@@ -291,69 +314,48 @@ const MapaPolski = () => {
 
               {/* Marker miasta wojewódzkiego */}
               <Marker coordinates={cityCoordinates[zoomedVoivodeship]}>
-                <g
-                  onMouseEnter={() => setHoveredCity(zoomedVoivodeship)}
-                  onMouseLeave={() => setHoveredCity(null)}
+                {/* Kropka (interaktywna) */}
+                <circle
+                  r={8} // Powiększony marker
+                  fill="#800080"
+                  stroke="#FFF"
+                  strokeWidth={2}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
                   style={{ cursor: "pointer" }}
-                >
-                  {/* Kropka */}
-                  <circle
-                    r={4}
-                    fill="#800080"
-                    stroke="#FFF"
-                    strokeWidth={1}
-                    style={{
-                      transition: "all 0.3s ease",
-                    }}
-                  />
+                />
 
-                  {/* Linia prowadząca do prostokąta */}
-                  {hoveredCity === zoomedVoivodeship && (
-                    <line
-                      x1={0}
-                      y1={0}
-                      x2={50}
-                      y2={-50}
-                      stroke="#800080"
-                      strokeWidth={2}
-                      style={{
-                        transition: "all 0.5s ease",
-                      }}
+                {/* Prostokąt z nazwą miasta (nieinteraktywny) */}
+                {hoveredCity === zoomedVoivodeship && (
+                  <g>
+                    <rect
+                      x={50}
+                      y={-70}
+                      width={cityNames[zoomedVoivodeship].length * 8}
+                      height={30}
+                      fill="#800080"
+                      rx={5}
+                      ry={5}
+                      className={`rectangle-animation rectangle-step-${animationStep}`}
+                      style={{ pointerEvents: "none" }} // Wyłącz interakcję
                     />
-                  )}
-
-                  {/* Prostokąt z nazwą miasta */}
-                  {hoveredCity === zoomedVoivodeship && (
-                    <g className="city-label">
-                      <rect
-                        x={50}
-                        y={-70}
-                        width={cityNames[zoomedVoivodeship].length * 8}
-                        height={30}
-                        fill="#800080"
-                        rx={5}
-                        ry={5}
-                        style={{
-                          transition: "all 0.5s ease",
-                        }}
-                      />
-                      <text
-                        x={50 + (cityNames[zoomedVoivodeship].length * 8) / 2}
-                        y={-55}
-                        textAnchor="middle"
-                        style={{
-                          fill: "#FFF",
-                          fontSize: "12px",
-                          fontWeight: "bold",
-                          fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
-                          pointerEvents: "none",
-                        }}
-                      >
-                        {cityNames[zoomedVoivodeship]}
-                      </text>
-                    </g>
-                  )}
-                </g>
+                    <text
+                      x={50 + (cityNames[zoomedVoivodeship].length * 8) / 2}
+                      y={-55}
+                      textAnchor="middle"
+                      className={`text-animation text-step-${animationStep}`}
+                      style={{
+                        fill: "#FFF",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+                        pointerEvents: "none", // Wyłącz interakcję
+                      }}
+                    >
+                      {cityNames[zoomedVoivodeship]}
+                    </text>
+                  </g>
+                )}
               </Marker>
             </ComposableMap>
 
