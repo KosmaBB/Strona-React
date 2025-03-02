@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import citiesData from './cities.json';
 import './MapaPolski.css';
@@ -68,7 +68,7 @@ const cityNames = {
   2: "Poznań",
   3: "Szczecin",
   4: "Kielce",
-  5: "Bydgoszcz/Toruń",
+  5: "Toruń",
   6: "Białystok",
   7: "Wrocław",
   8: "Rzeszów",
@@ -78,7 +78,7 @@ const cityNames = {
   12: "Łódź",
   13: "Warszawa",
   14: "Lublin",
-  15: "Gorzów Wielkopolski/Zielona Góra",
+  15: "Gorzów Wielkopolski",
 };
 
 const MapaPolski = () => {
@@ -89,8 +89,16 @@ const MapaPolski = () => {
   const [voivodeshipCenter, setVoivodeshipCenter] = useState([19, 52]);
   const [voivodeshipScale, setVoivodeshipScale] = useState(1);
   const [isInfoBarVisible, setIsInfoBarVisible] = useState(true);
-  const [hoveredCity, setHoveredCity] = useState(null); // Stan do śledzenia najechania na marker
-  const [animationStep, setAnimationStep] = useState(0); // Stan do kontrolowania animacji
+  const [hoveredCity, setHoveredCity] = useState(null);
+  const [animationStep, setAnimationStep] = useState(0);
+
+  // Efekt śledzący zmiany hoveredCity
+  useEffect(() => {
+    if (hoveredCity !== null) {
+      console.log("Rozpoczęto animację dla miasta:", cityNames[hoveredCity]); // Logowanie rozpoczęcia animacji
+      startAnimation();
+    }
+  }, [hoveredCity]);
 
   const fetchCities = (voivodeshipId) => {
     setLoading(true);
@@ -115,7 +123,7 @@ const MapaPolski = () => {
     setZoomedVoivodeship(null);
     setVoivodeshipCenter([19, 52]);
     setVoivodeshipScale(1);
-    setAnimationStep(0); // Resetuj animację
+    setAnimationStep(0);
   };
 
   const toggleInfoBar = () => {
@@ -131,25 +139,42 @@ const MapaPolski = () => {
     button.style.setProperty('--y', `${y}px`);
   };
 
-  const startAnimation = () => {
-    setAnimationStep(1); // Rozpocznij animację
-    setTimeout(() => setAnimationStep(2), 500); // Przejdź do kolejnego kroku
-    setTimeout(() => setAnimationStep(3), 1000); // Przejdź do kolejnego kroku
-    setTimeout(() => setAnimationStep(4), 1500); // Zakończ animację
-  };
-
   const handleMouseEnter = () => {
+    console.log("Najechano na marker miasta:", cityNames[zoomedVoivodeship]); // Logowanie nazwy miasta
     setHoveredCity(zoomedVoivodeship); // Ustaw stan hoveredCity na aktualne województwo
-    startAnimation(); // Rozpocznij animację
   };
 
   const handleMouseLeave = () => {
+    console.log("Opuszczono marker miasta:", cityNames[zoomedVoivodeship]); // Logowanie nazwy miasta
+    setHoveredCity(null); // Resetuj stan hoveredCity
+    setAnimationStep(0); // Resetuj animację
+    console.log("Zresetowano stan hoveredCity i animację."); // Logowanie resetu stanu
+  };
+
+  const startAnimation = () => {
+    setAnimationStep(1); // Rozpocznij animację
+
     setTimeout(() => {
-      if (hoveredCity === null) {
-        setHoveredCity(null);
-        setAnimationStep(0);
+      if (hoveredCity !== null) { // Tylko jeśli kursor nadal jest na markerze
+        console.log("Animacja krok 2 dla miasta:", cityNames[hoveredCity]); // Logowanie kroku animacji
+        setAnimationStep(2);
       }
-    }, 1500);
+    }, 500);
+
+    setTimeout(() => {
+      if (hoveredCity !== null) { // Tylko jeśli kursor nadal jest na markerze
+        console.log("Animacja krok 3 dla miasta:", cityNames[hoveredCity]); // Logowanie kroku animacji
+        setAnimationStep(3);
+
+        // Pętla animacji: po zakończeniu kroku 3 wracamy do kroku 2
+        setTimeout(() => {
+          if (hoveredCity !== null) { // Tylko jeśli kursor nadal jest na markerze
+            console.log("Powrót do kroku 2 dla miasta:", cityNames[hoveredCity]); // Logowanie powrotu do kroku 2
+            setAnimationStep(2);
+          }
+        }, 500); // Czas trwania kroku 3 przed powrotem do kroku 2
+      }
+    }, 1000);
   };
 
   return (
@@ -312,51 +337,52 @@ const MapaPolski = () => {
                 }
               </Geographies>
 
-              {/* Marker miasta wojewódzkiego */}
+              // W renderowaniu markera:
               <Marker coordinates={cityCoordinates[zoomedVoivodeship]}>
-                {/* Kropka (interaktywna) */}
-                <circle
-                  r={8} // Powiększony marker
-                  fill="#800080"
-                  stroke="#FFF"
-                  strokeWidth={2}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                  style={{ cursor: "pointer" }}
-                />
+              {/* Kropka (interaktywna) */}
+              <circle
+                r={8}
+                fill="#800080"
+                stroke="#FFD700" // Zmieniono kolor obramowania na żółty
+                strokeWidth={2}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                className={`circle-animation circle-step-${animationStep}`} // Dodano klasę CSS
+                style={{ cursor: "pointer" }}
+              />
 
-                {/* Prostokąt z nazwą miasta (nieinteraktywny) */}
-                {hoveredCity === zoomedVoivodeship && (
-                  <g>
-                    <rect
-                      x={50}
-                      y={-70}
-                      width={cityNames[zoomedVoivodeship].length * 8}
-                      height={30}
-                      fill="#800080"
-                      rx={5}
-                      ry={5}
-                      className={`rectangle-animation rectangle-step-${animationStep}`}
-                      style={{ pointerEvents: "none" }} // Wyłącz interakcję
-                    />
-                    <text
-                      x={50 + (cityNames[zoomedVoivodeship].length * 8) / 2}
-                      y={-55}
-                      textAnchor="middle"
-                      className={`text-animation text-step-${animationStep}`}
-                      style={{
-                        fill: "#FFF",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
-                        pointerEvents: "none", // Wyłącz interakcję
-                      }}
-                    >
-                      {cityNames[zoomedVoivodeship]}
-                    </text>
-                  </g>
-                )}
-              </Marker>
+              {/* Prostokąt z nazwą miasta (nieinteraktywny) */}
+              {hoveredCity === zoomedVoivodeship && (
+                <g>
+                  <rect
+                    x={50}
+                    y={-70}
+                    width={cityNames[zoomedVoivodeship].length * 8}
+                    height={30}
+                    fill="#800080"
+                    rx={5}
+                    ry={5}
+                    className={`rectangle-animation rectangle-step-${animationStep}`}
+                    style={{ pointerEvents: "none" }}
+                  />
+                  <text
+                    x={50 + (cityNames[zoomedVoivodeship].length * 8) / 2}
+                    y={-55}
+                    textAnchor="middle"
+                    className={`text-animation text-step-${animationStep}`}
+                    style={{
+                      fill: "#FFF",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {cityNames[zoomedVoivodeship]}
+                  </text>
+                </g>
+              )}
+            </Marker>
             </ComposableMap>
 
             {/* Przycisk powrotu do mapy */}
