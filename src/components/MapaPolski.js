@@ -92,10 +92,9 @@ const MapaPolski = () => {
   const [hoveredCity, setHoveredCity] = useState(null);
   const [animationStep, setAnimationStep] = useState(0);
 
-  // Efekt śledzący zmiany hoveredCity
   useEffect(() => {
     if (hoveredCity !== null) {
-      console.log("Rozpoczęto animację dla miasta:", cityNames[hoveredCity]); // Logowanie rozpoczęcia animacji
+      console.log("Rozpoczęto animację dla miasta:", cityNames[hoveredCity]);
       startAnimation();
     }
   }, [hoveredCity]);
@@ -140,39 +139,38 @@ const MapaPolski = () => {
   };
 
   const handleMouseEnter = () => {
-    console.log("Najechano na marker miasta:", cityNames[zoomedVoivodeship]); // Logowanie nazwy miasta
-    setHoveredCity(zoomedVoivodeship); // Ustaw stan hoveredCity na aktualne województwo
+    console.log("Najechano na marker miasta:", cityNames[zoomedVoivodeship]);
+    setHoveredCity(zoomedVoivodeship);
   };
 
   const handleMouseLeave = () => {
-    console.log("Opuszczono marker miasta:", cityNames[zoomedVoivodeship]); // Logowanie nazwy miasta
-    setHoveredCity(null); // Resetuj stan hoveredCity
-    setAnimationStep(0); // Resetuj animację
-    console.log("Zresetowano stan hoveredCity i animację."); // Logowanie resetu stanu
+    console.log("Opuszczono marker miasta:", cityNames[zoomedVoivodeship]);
+    setHoveredCity(null);
+    setAnimationStep(0);
+    console.log("Zresetowano stan hoveredCity i animację.");
   };
 
   const startAnimation = () => {
     setAnimationStep(1); // Rozpocznij animację
 
     setTimeout(() => {
-      if (hoveredCity !== null) { // Tylko jeśli kursor nadal jest na markerze
-        console.log("Animacja krok 2 dla miasta:", cityNames[hoveredCity]); // Logowanie kroku animacji
+      if (hoveredCity !== null) {
+        console.log("Animacja krok 2 dla miasta:", cityNames[hoveredCity]);
         setAnimationStep(2);
       }
     }, 500);
 
     setTimeout(() => {
-      if (hoveredCity !== null) { // Tylko jeśli kursor nadal jest na markerze
-        console.log("Animacja krok 3 dla miasta:", cityNames[hoveredCity]); // Logowanie kroku animacji
+      if (hoveredCity !== null) {
+        console.log("Animacja krok 3 dla miasta:", cityNames[hoveredCity]);
         setAnimationStep(3);
 
-        // Pętla animacji: po zakończeniu kroku 3 wracamy do kroku 2
         setTimeout(() => {
-          if (hoveredCity !== null) { // Tylko jeśli kursor nadal jest na markerze
-            console.log("Powrót do kroku 2 dla miasta:", cityNames[hoveredCity]); // Logowanie powrotu do kroku 2
+          if (hoveredCity !== null) {
+            console.log("Powrót do kroku 2 dla miasta:", cityNames[hoveredCity]);
             setAnimationStep(2);
           }
-        }, 500); // Czas trwania kroku 3 przed powrotem do kroku 2
+        }, 500);
       }
     }, 1000);
   };
@@ -343,11 +341,11 @@ const MapaPolski = () => {
               <circle
                 r={8}
                 fill="#800080"
-                stroke="#FFD700" // Zmieniono kolor obramowania na żółty
+                stroke="#FFD700"
                 strokeWidth={2}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                className={`circle-animation circle-step-${animationStep}`} // Dodano klasę CSS
+                className={`circle-animation circle-step-${animationStep}`}
                 style={{ cursor: "pointer" }}
               />
 

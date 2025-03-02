@@ -109,8 +109,6 @@ transform: translate(-50%, -50%) scale(1);
 opacity: 0;
 }
 
-
-/* Animacja kropki */
 .circle-animation {
 transition: all 0.5s ease;
 }
@@ -123,14 +121,14 @@ animation: openCircle 0.5s forwards;
 
 @keyframes openCircle {
 to {
-  stroke-dashoffset: 75; /* Otwórz koło o 1/4 obwodu */
+  stroke-dashoffset: 75;
 }
 }
 
 .rectangle-animation {
-opacity: 0; /* Początkowo niewidoczny */
+opacity: 0;
 transform: scale(0);
-animation-fill-mode: forwards; /* Zachowaj końcowy stan animacji */
+animation-fill-mode: forwards;
 }
 
 .rectangle-step-1 {
@@ -162,7 +160,6 @@ to {
 }
 }
 
-/* Animacja tekstu */
 .text-animation {
 opacity: 0;
 transition: opacity 0.5s ease;
