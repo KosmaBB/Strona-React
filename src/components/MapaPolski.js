@@ -91,6 +91,9 @@ const MapaPolski = () => {
   const [isInfoBarVisible, setIsInfoBarVisible] = useState(true);
   const [hoveredCity, setHoveredCity] = useState(null);
   const [animationStep, setAnimationStep] = useState(0);
+  const [searchQuery, setSearchQuery] = useState(""); 
+  const [isdarkMode, setIsDarkMode] = useState(false);
+  const [mapType, setMapType] = useState('standard');
 
   useEffect(() => {
     if (hoveredCity !== null) {
@@ -151,7 +154,7 @@ const MapaPolski = () => {
   };
 
   const startAnimation = () => {
-    setAnimationStep(1); // Rozpocznij animację
+    setAnimationStep(1); 
 
     setTimeout(() => {
       if (hoveredCity !== null) {
@@ -177,31 +180,66 @@ const MapaPolski = () => {
 
   return (
     <div style={{ 
-      width: "100%", 
-      height: "100vh", 
+      width: "auto", 
+      height: "115vh", 
       display: "flex", 
       justifyContent: "center", 
       alignItems: "center", 
       flexDirection: "column",
       fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
       position: "relative",
+      backgroundColor: isdarkMode ? "#121212" : "#FFF",
+      color: isdarkMode ? "#FFF" : "#333",
     }}>
-      {/* Tytuł strony */}
+      {}
       <h1 style={{ 
         marginBottom: "20px", 
         fontSize: "2em", 
-        color: "#333",
         animation: "fadeIn 1s ease-in-out",
+        color: isdarkMode ? "#FFF" : "#333",
       }}>
         Mapa Polski z Województwami
       </h1>
-
+        <button
+          onClick={() => setIsDarkMode(!isdarkMode)}
+          onMouseMove={handleMouseMove}
+          className="button"
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "20px",
+            padding: "10px",
+            backgroundColor: isdarkMode ? "#121212" : "#FFF",
+            color: isdarkMode ? "#FFF" : "#333",
+            border: "2px solid #800080",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          {isdarkMode ? "Włącz jasny motyw" : "Włącz ciemny motyw"}
+        </button>
+        <button
+          onClick={() => setMapType(mapType === 'standard' ? 'satellite' : 'standard')}
+          style={{
+            position: "fixed",
+            top: "65px",
+            left: "21px",
+            padding: "10px",
+            backgroundColor: isdarkMode ? "#121212" : "#FFF",
+            color: isdarkMode ? "#FFF" : "#333",
+            border: "1px solid #ccc",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          {mapType === 'standard' ? 'Mapa Satelitarna' : 'Mapa standardowa'}
+        </button>
       {/* Nazwa województwa po najechaniu */}
       {hoveredVoivodeship !== null && (
         <h2 style={{ 
           marginBottom: "10px", 
           fontSize: "1.5em", 
-          color: "#555",
+          color: isdarkMode ? "#FFF" : "#333",
           animation: "slideIn 0.5s ease-in-out",
         }}>
           {voivodeshipNames[hoveredVoivodeship]}
@@ -213,7 +251,7 @@ const MapaPolski = () => {
         <h2 style={{ 
           marginBottom: "10px", 
           fontSize: "1.5em", 
-          color: "#555",
+          color: isdarkMode ? "#FFF" : "#333",
           animation: "slideIn 0.5s ease-in-out",
         }}>
           {voivodeshipNames[zoomedVoivodeship]}
@@ -233,6 +271,7 @@ const MapaPolski = () => {
             height: "auto",
             transition: "opacity 0.5s ease, transform 0.5s ease",
             opacity: zoomedVoivodeship !== null ? 0 : 1,
+            backgroundColor: isdarkMode ? "#121212" : "#FFF",
           }}
         >
           <Geographies geography={geoUrl}>
@@ -254,8 +293,8 @@ const MapaPolski = () => {
                     }}
                     style={{
                       default: {
-                        fill: "#EEE",
-                        stroke: "#8000",
+                        fill: isdarkMode ? "#333" : "#121212",
+                        stroke: isdarkMode ? "#555" : "#8000",
                         strokeWidth: "1px",
                         outline: "none",
                         opacity: isZoomed ? 1 : isHovered ? 1 : 0.7,
@@ -263,8 +302,8 @@ const MapaPolski = () => {
                         transition: "all 0.5s ease",
                       },
                       hover: {
-                        fill: "#EEE",
-                        stroke: "#800080",
+                        fill: isdarkMode ? "#444" : "#121212",
+                        stroke: isdarkMode ? "#777" : "#800080",
                         strokeWidth: "4px",
                         outline: "none",
                         filter: "drop-shadow(0 0 8px rgba(142, 7, 195, 0.8))",
@@ -273,8 +312,8 @@ const MapaPolski = () => {
                         transition: "all 0.3s ease",
                       },
                       pressed: {
-                        fill: "#EEE",
-                        stroke: "#000",
+                        fill: isdarkMode ? "#444" : "#121212",
+                        stroke: isdarkMode ? "#999" : "#000",
                         strokeWidth: "4px",
                         outline: "none",
                       },
@@ -285,7 +324,6 @@ const MapaPolski = () => {
             }
           </Geographies>
         </ComposableMap>
-
         {zoomedVoivodeship !== null && (
           <div style={{
             position: "absolute",
@@ -296,7 +334,7 @@ const MapaPolski = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            backgroundColor: isdarkMode ? "#121212" : "#FFF",
             transition: "opacity 0.5s ease",
             animation: "zoomIn 0.5s ease-in-out",
           }}>
@@ -335,52 +373,52 @@ const MapaPolski = () => {
                 }
               </Geographies>
 
-              // W renderowaniu markera:
+              {/* Marker miasta wojewódzkiego */}
               <Marker coordinates={cityCoordinates[zoomedVoivodeship]}>
-              {/* Kropka (interaktywna) */}
-              <circle
-                r={8}
-                fill="#800080"
-                stroke="#FFD700"
-                strokeWidth={2}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                className={`circle-animation circle-step-${animationStep}`}
-                style={{ cursor: "pointer" }}
-              />
+                {}
+                <circle
+                  r={8}
+                  fill="#800080"
+                  stroke="#FFD700"
+                  strokeWidth={2}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  className={`circle-animation circle-step-${animationStep}`}
+                  style={{ cursor: "pointer" }}
+                />
 
-              {/* Prostokąt z nazwą miasta (nieinteraktywny) */}
-              {hoveredCity === zoomedVoivodeship && (
-                <g>
-                  <rect
-                    x={50}
-                    y={-70}
-                    width={cityNames[zoomedVoivodeship].length * 8}
-                    height={30}
-                    fill="#800080"
-                    rx={5}
-                    ry={5}
-                    className={`rectangle-animation rectangle-step-${animationStep}`}
-                    style={{ pointerEvents: "none" }}
-                  />
-                  <text
-                    x={50 + (cityNames[zoomedVoivodeship].length * 8) / 2}
-                    y={-55}
-                    textAnchor="middle"
-                    className={`text-animation text-step-${animationStep}`}
-                    style={{
-                      fill: "#FFF",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    {cityNames[zoomedVoivodeship]}
-                  </text>
-                </g>
-              )}
-            </Marker>
+                {/* Prostokąt z nazwą miasta */}
+                {hoveredCity === zoomedVoivodeship && (
+                  <g>
+                    <rect
+                      x={50}
+                      y={-70}
+                      width={cityNames[zoomedVoivodeship].length * 8}
+                      height={30}
+                      fill="#800080"
+                      rx={5}
+                      ry={5}
+                      className={`rectangle-animation rectangle-step-${animationStep}`}
+                      style={{ pointerEvents: "none" }}
+                    />
+                    <text
+                      x={50 + (cityNames[zoomedVoivodeship].length * 8) / 2}
+                      y={-55}
+                      textAnchor="middle"
+                      className={`text-animation text-step-${animationStep}`}
+                      style={{
+                        fill: "#FFF",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      {cityNames[zoomedVoivodeship]}
+                    </text>
+                  </g>
+                )}
+              </Marker>
             </ComposableMap>
 
             {/* Przycisk powrotu do mapy */}
@@ -393,6 +431,8 @@ const MapaPolski = () => {
                 top: "20px",
                 right: "20px",
                 border: "2px solid rgb(255, 255, 255)",
+                backgroundColor: isdarkMode ? "#333" : "#FFF",
+                color: isdarkMode ? "#FFF" : "#333",
               }}
             >
               Powrót do mapy
@@ -408,39 +448,72 @@ const MapaPolski = () => {
         overflowY: "auto", 
         padding: "0 20px" 
       }}>
+        {}
+        {zoomedVoivodeship !== null && (
+          <input
+            type="text"
+            placeholder="Wyszukaj miasto..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginBottom: "20px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+              fontSize: "16px",
+            }}
+          />
+        )}
+
         {loading && <p>Ładowanie...</p>}
-        {cities.length > 0 && (
+        {cities.length > 0 && ( 
           <div style={{ 
             padding: "20px", 
-            backgroundColor: "#FFF", 
+            backgroundColor: isdarkMode ? "#121212" : "#FFF",
             borderRadius: "10px", 
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", 
             textAlign: "center",
             animation: "slideIn 0.5s ease-in-out",
           }}>
-            <h2>Miasta w wybranym województwie:</h2>
+            <h2 style ={{ color: isdarkMode ? "#FFF" : "#333" }}>Miasta w wybranym województwie:</h2>
             <div style={{ 
               display: "grid", 
               gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", 
               gap: "10px", 
               padding: "10px" 
             }}>
-              {cities.map((city, index) => (
-                <div key={index} style={{ 
-                  padding: "10px", 
-                  backgroundColor: "#f0f0f0", 
-                  borderRadius: "5px", 
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                  transition: "all 0.3s ease",
-                  animation: "fadeIn 0.5s ease-in-out",
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = "#ddd"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "#f0f0f0"}
-                >
-                  {city}
-                </div>
-              ))}
+              {cities
+                .filter((city) =>
+                  city.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((city, index) => (
+                  <div key={index} style={{ 
+                    padding: "10px", 
+                    backgroundColor: isdarkMode ? "#121212" : "#FFF",
+                    borderRadius: "5px", 
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                    transition: "all 0.3s ease",
+                    animation: "fadeIn 0.5s ease-in-out",
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#f0f0f0"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "#f0f0f0"}
+                  >
+                    {city}
+                  </div>
+                ))}
             </div>
+            {}
+            {cities.filter((city) =>
+              city.toLowerCase().includes(searchQuery.toLowerCase())
+            ).length === 0 && (
+              <p style={{  
+                color: isdarkMode ? "#FFF" : "#333",
+                marginTop: "10px" 
+                }}
+                >Brak wyników dla "{searchQuery}" w tym województwie 
+                </p>
+            )}
           </div>
         )}
       </div>
@@ -452,8 +525,8 @@ const MapaPolski = () => {
           bottom: 0,
           left: 0,
           width: "100%",
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          color: "#FFF",
+          backgroundColor: isdarkMode ? "#121212" : "#FFF",
+          color: isdarkMode ? "#FFF" : "#333",
           padding: "10px",
           display: "flex",
           justifyContent: "space-between",
@@ -487,6 +560,8 @@ const MapaPolski = () => {
               className="button"
               style={{
                 border: "2px solid #800080",
+                backgroundColor: isdarkMode ? "#121212" : "#FFF",
+                color: isdarkMode ? "#FFF" : "#333",
               }}
             >
               Zamknij
@@ -505,6 +580,8 @@ const MapaPolski = () => {
             position: "fixed",
             bottom: "20px",
             right: "20px",
+            backgroundColor: isdarkMode ? "#121212" : "#FFF",
+            color: isdarkMode ? "#FFF" : "#333",
           }}
         >
           Otwórz pasek
