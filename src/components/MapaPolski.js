@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import citiesData from './cities.json';
+import { FaGithub } from 'react-icons/fa';
+import { MdOutlineDarkMode } from 'react-icons/md';
 import './MapaPolski.css';
+import { BiWindowOpen } from 'react-icons/bi';
 
 const geoUrl = "https://raw.githubusercontent.com/ppatrzyk/polska-geojson/master/wojewodztwa/wojewodztwa-medium.geojson";
 
@@ -35,7 +38,7 @@ const voivodeshipSettings = {
   7: { scale: 1.0, center: [16.3, 50.9] }, // Dolnośląskie
   8: { scale: 1.0, center: [22.0, 50.0] }, // Podkarpackie
   9: { scale: 1.4, center: [19.9, 49.8] }, // Małopolskie
-  10: { scale: 1.2, center: [17.8, 54.2] }, // Pomorskie
+  10: { scale: 1.0, center: [17.8, 54.2] }, // Pomorskie
   11: { scale: 1.1, center: [20.6, 53.7] }, // Warmińsko-mazurskie
   12: { scale: 1.2, center: [19.4, 51.6] }, // Łódzkie
   13: { scale: 0.7, center: [21.0, 52.3] }, // Mazowieckie
@@ -132,6 +135,8 @@ const MapaPolski = () => {
     setIsInfoBarVisible(!isInfoBarVisible);
   };
 
+
+
   const handleMouseMove = (e) => {
     const button = e.currentTarget;
     const rect = button.getBoundingClientRect();
@@ -142,15 +147,12 @@ const MapaPolski = () => {
   };
 
   const handleMouseEnter = () => {
-    console.log("Najechano na marker miasta:", cityNames[zoomedVoivodeship]);
     setHoveredCity(zoomedVoivodeship);
   };
 
   const handleMouseLeave = () => {
-    console.log("Opuszczono marker miasta:", cityNames[zoomedVoivodeship]);
     setHoveredCity(null);
     setAnimationStep(0);
-    console.log("Zresetowano stan hoveredCity i animację.");
   };
 
   const startAnimation = () => {
@@ -158,37 +160,41 @@ const MapaPolski = () => {
 
     setTimeout(() => {
       if (hoveredCity !== null) {
-        console.log("Animacja krok 2 dla miasta:", cityNames[hoveredCity]);
         setAnimationStep(2);
       }
     }, 500);
 
     setTimeout(() => {
       if (hoveredCity !== null) {
-        console.log("Animacja krok 3 dla miasta:", cityNames[hoveredCity]);
         setAnimationStep(3);
 
         setTimeout(() => {
           if (hoveredCity !== null) {
-            console.log("Powrót do kroku 2 dla miasta:", cityNames[hoveredCity]);
             setAnimationStep(2);
           }
         }, 500);
       }
     }, 1000);
   };
+  const GithubOpen = () => {
+    const handleGithubClick = () => {
+      window.open('https://github.com/kosmabb')
+    }
+    handleGithubClick();
+    
+  }
 
   return (
     <div style={{ 
-      width: "auto", 
-      height: "115vh", 
+      width: "fixed", 
+      height: "100vh", 
       display: "flex", 
       justifyContent: "center", 
       alignItems: "center", 
       flexDirection: "column",
       fontFamily: "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
       position: "relative",
-      backgroundColor: isdarkMode ? "#121212" : "#FFF",
+      backgroundColor: isdarkMode ? "#141414" : "#FFF",
       color: isdarkMode ? "#FFF" : "#333",
     }}>
       {}
@@ -216,14 +222,14 @@ const MapaPolski = () => {
             cursor: "pointer",
           }}
         >
-          {isdarkMode ? "Włącz jasny motyw" : "Włącz ciemny motyw"}
+          {isdarkMode ? "Jasny" : "Ciemny"}
         </button>
         <button
           onClick={() => setMapType(mapType === 'standard' ? 'satellite' : 'standard')}
           style={{
             position: "fixed",
             top: "65px",
-            left: "21px",
+            left: "20.2px",
             padding: "10px",
             backgroundColor: isdarkMode ? "#121212" : "#FFF",
             color: isdarkMode ? "#FFF" : "#333",
@@ -490,14 +496,12 @@ const MapaPolski = () => {
                 .map((city, index) => (
                   <div key={index} style={{ 
                     padding: "10px", 
-                    backgroundColor: isdarkMode ? "#121212" : "#FFF",
+                    backgroundColor: isdarkMode ? "#333" : "#FFF",
                     borderRadius: "5px", 
                     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                     transition: "all 0.3s ease",
                     animation: "fadeIn 0.5s ease-in-out",
                   }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = "#f0f0f0"}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = "#f0f0f0"}
                   >
                     {city}
                   </div>
@@ -509,6 +513,7 @@ const MapaPolski = () => {
             ).length === 0 && (
               <p style={{  
                 color: isdarkMode ? "#FFF" : "#333",
+                backgroundColor: isdarkMode ? "395" : "395",
                 marginTop: "10px" 
                 }}
                 >Brak wyników dla "{searchQuery}" w tym województwie 
@@ -525,14 +530,15 @@ const MapaPolski = () => {
           bottom: 0,
           left: 0,
           width: "100%",
-          backgroundColor: isdarkMode ? "#121212" : "#FFF",
-          color: isdarkMode ? "#FFF" : "#333",
+          backgroundColor: isdarkMode ? "#333" : "#121212",
+          color: isdarkMode ? "#FFF" : "#FFF",
+          opacity: "80%",
           padding: "10px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           zIndex: 1000,
-          animation: "slideUp 0.5s ease-in-out",
+          animation: "slideUp 0.5s ease-in-out, slide",       
         }}>
           <div style={{ 
             flex: 1,
@@ -587,6 +593,42 @@ const MapaPolski = () => {
           Otwórz pasek
         </button>
       )}
+      <button
+        onClick={GithubOpen}
+        onMouseMove={handleMouseMove}
+        className="button"
+              style={{
+                display: 'fixed',
+                alignItems: 'center',
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                gap: '8px',
+                padding: '10px 15px',
+                backgroundColor: '#333',
+                color: 'white',
+                outline: 'none',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                textDecoration: 'none',
+                textAlign: 'center',
+                border: '2px solid #800080',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                transition: 'background-color 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#800080',
+                },
+                '&:active': {
+                  transform: 'scale(0.98)',
+                },
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              <FaGithub size={19} />
+              Po więcej moich prac zapraszam na Githuba
+        </button>
     </div>
   );
 };
